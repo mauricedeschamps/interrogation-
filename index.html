@@ -44,7 +44,6 @@
       line-height: 1.5;
     }
 
-    /* 共通コンテナ */
     .container {
       max-width: 800px;
       margin: 0 auto;
@@ -94,7 +93,7 @@
       background-color: var(--surface-variant);
     }
 
-    /* カードグリッド（疑問詞リスト） */
+    /* カードグリッド */
     .grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
@@ -125,7 +124,7 @@
       color: var(--secondary-text);
     }
 
-    /* 詳細ページ用 */
+    /* 詳細ページ */
     .back-button {
       background: none;
       border: none;
@@ -157,6 +156,12 @@
       border-radius: 0.8rem;
       margin: 0.6rem 0;
     }
+    .audio-buttons {
+      display: flex;
+      gap: 0.8rem;
+      margin-top: 0.5rem;
+      flex-wrap: wrap;
+    }
     .audio-btn {
       background-color: var(--primary);
       color: black;
@@ -164,7 +169,12 @@
       padding: 0.3rem 1rem;
       border-radius: 2rem;
       font-size: 0.8rem;
-      margin-top: 0.5rem;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    .audio-btn-en {
+      background-color: #2c7da0;
+      color: white;
     }
 
     /* フッター */
@@ -181,13 +191,8 @@
       text-decoration: none;
     }
 
-    /* その他 */
     .hidden {
       display: none;
-    }
-    hr {
-      border-color: var(--border);
-      margin: 1rem 0;
     }
   </style>
 </head>
@@ -218,7 +223,7 @@
       </div>
     </div>
 
-    <!-- 詳細ページ（初期は非表示） -->
+    <!-- 詳細ページ -->
     <div id="detail-page" class="hidden">
       <div class="app-header">
         <div class="container header-row">
@@ -247,8 +252,7 @@
 
   <script>
     // ----------------------------------------------
-    // データ定義 (疑問詞ごとに複数の例文)
-    // 日本語文 + ローマ字(ハイフン/スペース付き) + 各言語翻訳
+    // データ定義 (各疑問詞の例文)
     // ----------------------------------------------
     const interrogativesData = [
       { id: "nani",  labelEn: "What", labelIt: "Che cosa", labelRu: "Что", labelJa: "何",
@@ -337,19 +341,19 @@
         ] }
     ];
 
-    // 多言語UIテキスト
+    // UI多言語テキスト
     const uiText = {
-      en: { title: "📖 Japanese Interrogatives", back: "Back", mainTitle: "Choose a question word" },
-      it: { title: "📖 Interrogativi Giapponesi", back: "Indietro", mainTitle: "Scegli una parola interrogativa" },
-      ru: { title: "📖 Японские вопросительные слова", back: "Назад", mainTitle: "Выберите вопросительное слово" },
-      ja: { title: "📖 日本語の疑問詞", back: "戻る", mainTitle: "疑問詞を選んでください" }
+      en: { title: "📖 Japanese Interrogatives", back: "Back", mainTitle: "Choose a question word", btnJa: "🔊 Japanese", btnEn: "🇺🇸 English" },
+      it: { title: "📖 Interrogativi Giapponesi", back: "Indietro", mainTitle: "Scegli una parola interrogativa", btnJa: "🔊 Giapponese", btnEn: "🇺🇸 Inglese" },
+      ru: { title: "📖 Японские вопросительные слова", back: "Назад", mainTitle: "Выберите вопросительное слово", btnJa: "🔊 Японский", btnEn: "🇺🇸 Английский" },
+      ja: { title: "📖 日本語の疑問詞", back: "戻る", mainTitle: "疑問詞を選んでください", btnJa: "🔊 日本語", btnEn: "🇺🇸 英語" }
     };
 
-    let currentLang = "en";     // en, it, ru, ja
+    let currentLang = "en";
     let currentInterrogativeId = null;
-    let speechUtterance = null;
+    let currentUtterance = null;
 
-    // DOM 要素
+    // DOM要素
     const mainPage = document.getElementById("main-page");
     const detailPage = document.getElementById("detail-page");
     const questionGrid = document.getElementById("question-grid");
@@ -363,7 +367,7 @@
     const mainTitle = document.getElementById("main-title");
     const backTextSpan = document.getElementById("backText");
 
-    // テーマ切り替え
+    // テーマ処理
     function setTheme(theme) {
       document.body.classList.remove("dark", "light");
       document.body.classList.add(theme);
@@ -379,20 +383,27 @@
     themeToggle.onclick = toggleTheme;
     detailThemeToggle.onclick = toggleTheme;
 
-    // 音声再生（日本語テキスト）
+    // 音声再生（日本語）
     function speakJapanese(text) {
-      if (!window.speechSynthesis) {
-        alert("Speech Synthesis not supported");
-        return;
-      }
-      if (speechUtterance) window.speechSynthesis.cancel();
-      speechUtterance = new SpeechSynthesisUtterance(text);
-      speechUtterance.lang = "ja-JP";
-      speechUtterance.rate = 0.9;
-      window.speechSynthesis.speak(speechUtterance);
+      if (!window.speechSynthesis) return alert("Speech synthesis not supported");
+      if (currentUtterance) window.speechSynthesis.cancel();
+      currentUtterance = new SpeechSynthesisUtterance(text);
+      currentUtterance.lang = "ja-JP";
+      currentUtterance.rate = 0.9;
+      window.speechSynthesis.speak(currentUtterance);
     }
 
-    // メインページの疑問詞リストを描画
+    // 音声再生（英語）
+    function speakEnglish(text) {
+      if (!window.speechSynthesis) return alert("Speech synthesis not supported");
+      if (currentUtterance) window.speechSynthesis.cancel();
+      currentUtterance = new SpeechSynthesisUtterance(text);
+      currentUtterance.lang = "en-US";
+      currentUtterance.rate = 0.9;
+      window.speechSynthesis.speak(currentUtterance);
+    }
+
+    // メインページ描画
     function renderMainPage() {
       const ui = uiText[currentLang];
       mainTitle.textContent = ui.title;
@@ -413,27 +424,25 @@
       });
     }
 
-    // 詳細ページを表示
+    // 詳細ページ表示
     function showDetailPage(interrogativeId) {
       currentInterrogativeId = interrogativeId;
       const item = interrogativesData.find(i => i.id === interrogativeId);
       if (!item) return;
-      // タイトル表示
       let titleWord = item.labelJa;
       if (currentLang === "en") titleWord = item.labelEn;
       else if (currentLang === "it") titleWord = item.labelIt;
       else if (currentLang === "ru") titleWord = item.labelRu;
       else titleWord = item.labelJa;
       detailWordTitle.textContent = `❓ ${titleWord}`;
-      // 例文描画
       renderExamples(item);
-      // ページ切り替え
       mainPage.classList.add("hidden");
       detailPage.classList.remove("hidden");
       window.scrollTo(0, 0);
     }
 
     function renderExamples(item) {
+      const ui = uiText[currentLang];
       examplesList.innerHTML = "";
       item.examples.forEach((ex, idx) => {
         const translation = ex.translations[currentLang] || ex.translations.en;
@@ -443,31 +452,32 @@
           <div class="japanese-sentence">${ex.jp}</div>
           <div class="romaji-sentence">${ex.romaji}</div>
           <div class="translation-box">📖 ${translation}</div>
-          <button class="audio-btn" data-text="${ex.jp.replace(/"/g, '&quot;')}">🔊 音声 / Audio</button>
+          <div class="audio-buttons">
+            <button class="audio-btn" data-jp="${ex.jp.replace(/"/g, '&quot;')}">${ui.btnJa}</button>
+            <button class="audio-btn audio-btn-en" data-en="${ex.translations.en.replace(/"/g, '&quot;')}">${ui.btnEn}</button>
+          </div>
         `;
-        const audioBtn = div.querySelector(".audio-btn");
-        audioBtn.addEventListener("click", (e) => {
+        const jaBtn = div.querySelector(".audio-btn:not(.audio-btn-en)");
+        const enBtn = div.querySelector(".audio-btn-en");
+        jaBtn.addEventListener("click", (e) => {
           e.stopPropagation();
           speakJapanese(ex.jp);
+        });
+        enBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          speakEnglish(ex.translations.en);
         });
         examplesList.appendChild(div);
       });
     }
 
-    // 多言語切り替え (UI全体更新)
+    // 多言語切り替え
     function changeLanguage(lang) {
       currentLang = lang;
       localStorage.setItem("userLang", lang);
       langSelect.value = lang;
       detailLangSelect.value = lang;
-      const ui = uiText[lang];
-      mainTitle.textContent = ui.title;
-      backTextSpan.textContent = ui.back;
       renderMainPage();
-      // 詳細ページが開いている場合、再描画
-      if (!mainPage.classList.contains("hidden") && currentInterrogativeId) {
-        // 実は表示されていないときは何もしない
-      }
       if (!detailPage.classList.contains("hidden") && currentInterrogativeId) {
         const item = interrogativesData.find(i => i.id === currentInterrogativeId);
         if (item) {
@@ -482,7 +492,6 @@
       }
     }
 
-    // 戻る
     function goToMain() {
       detailPage.classList.add("hidden");
       mainPage.classList.remove("hidden");
@@ -491,23 +500,16 @@
     }
 
     backButton.onclick = goToMain;
-
-    // 言語選択同期
     langSelect.addEventListener("change", (e) => changeLanguage(e.target.value));
     detailLangSelect.addEventListener("change", (e) => changeLanguage(e.target.value));
 
-    // 初期化
     const savedLang = localStorage.getItem("userLang") || "en";
     changeLanguage(savedLang);
 
     // Service Worker 登録
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('sw.js').then(reg => {
-          console.log('SW registered: ', reg);
-        }).catch(err => {
-          console.log('SW registration failed: ', err);
-        });
+        navigator.serviceWorker.register('sw.js').catch(err => console.log("SW failed", err));
       });
     }
   </script>
