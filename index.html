@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title lang="en">Japanese Interrogatives</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#1e1e2f">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+    }
+
+    /* ダークモード（デフォルト） */
+    body.dark {
+      --bg: #121212;
+      --surface: #1e1e2f;
+      --surface-variant: #2a2a3a;
+      --primary: #bb86fc;
+      --primary-text: #ffffff;
+      --secondary-text: #b0b0b8;
+      --border: #3a3a4a;
+      --shadow: rgba(0,0,0,0.5);
+    }
+    /* ライトモード */
+    body.light {
+      --bg: #f5f5f7;
+      --surface: #ffffff;
+      --surface-variant: #e9e9ef;
+      --primary: #6200ee;
+      --primary-text: #1c1c1e;
+      --secondary-text: #3a3a44;
+      --border: #d0d0d8;
+      --shadow: rgba(0,0,0,0.1);
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--primary-text);
+      font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+      line-height: 1.5;
+    }
+
+    /* 共通コンテナ */
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 1rem;
+    }
+
+    /* ヘッダー */
+    .app-header {
+      background-color: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 1rem;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 2px 4px var(--shadow);
+    }
+    .header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.8rem;
+    }
+    h1 {
+      font-size: 1.6rem;
+      margin: 0;
+    }
+    .controls {
+      display: flex;
+      gap: 0.8rem;
+      flex-wrap: wrap;
+    }
+    button, select {
+      background-color: var(--surface-variant);
+      color: var(--primary-text);
+      border: 1px solid var(--border);
+      padding: 0.4rem 0.8rem;
+      border-radius: 2rem;
+      font-size: 0.85rem;
+      cursor: pointer;
+    }
+    button.primary {
+      background-color: var(--primary);
+      color: #000;
+      border: none;
+      font-weight: bold;
+    }
+    .lang-select {
+      background-color: var(--surface-variant);
+    }
+
+    /* カードグリッド（疑問詞リスト） */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+    .card {
+      background-color: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 1rem;
+      padding: 1rem;
+      cursor: pointer;
+      text-align: center;
+      transition: transform 0.1s ease;
+      box-shadow: 0 1px 3px var(--shadow);
+    }
+    .card:hover {
+      transform: scale(1.02);
+      background-color: var(--surface-variant);
+    }
+    .question-word {
+      font-size: 1.8rem;
+      font-weight: bold;
+      margin-bottom: 0.3rem;
+    }
+    .question-trans {
+      font-size: 0.9rem;
+      color: var(--secondary-text);
+    }
+
+    /* 詳細ページ用 */
+    .back-button {
+      background: none;
+      border: none;
+      font-size: 1rem;
+      margin-bottom: 1rem;
+      padding-left: 0;
+    }
+    .example-item {
+      background-color: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 1rem;
+      margin-bottom: 1.2rem;
+      padding: 1rem;
+    }
+    .japanese-sentence {
+      font-size: 1.3rem;
+      font-weight: 500;
+      margin-bottom: 0.3rem;
+    }
+    .romaji-sentence {
+      font-family: monospace;
+      color: var(--secondary-text);
+      font-size: 0.9rem;
+      margin-bottom: 0.8rem;
+    }
+    .translation-box {
+      background-color: var(--surface-variant);
+      padding: 0.7rem;
+      border-radius: 0.8rem;
+      margin: 0.6rem 0;
+    }
+    .audio-btn {
+      background-color: var(--primary);
+      color: black;
+      border: none;
+      padding: 0.3rem 1rem;
+      border-radius: 2rem;
+      font-size: 0.8rem;
+      margin-top: 0.5rem;
+    }
+
+    /* フッター */
+    .app-footer {
+      margin-top: 3rem;
+      padding: 1.5rem;
+      text-align: center;
+      border-top: 1px solid var(--border);
+      font-size: 0.85rem;
+      background-color: var(--surface);
+    }
+    .app-footer a {
+      color: var(--primary);
+      text-decoration: none;
+    }
+
+    /* その他 */
+    .hidden {
+      display: none;
+    }
+    hr {
+      border-color: var(--border);
+      margin: 1rem 0;
+    }
+  </style>
+</head>
+<body class="dark">
+  <div id="app">
+    <!-- メインページ -->
+    <div id="main-page">
+      <div class="app-header">
+        <div class="container header-row">
+          <h1 id="main-title">📖 Japanese Interrogatives</h1>
+          <div class="controls">
+            <button id="themeToggle" class="primary">🌓 Dark/Light</button>
+            <select id="langSelect" class="lang-select">
+              <option value="en">🇬🇧 English</option>
+              <option value="it">🇮🇹 Italiano</option>
+              <option value="ru">🇷🇺 Русский</option>
+              <option value="ja">🇯🇵 日本語</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="container">
+        <div id="question-grid" class="grid"></div>
+      </div>
+      <div class="app-footer">
+        <a href="mailto:mementomorikatsu@gmail.com">Contact us</a><br>
+        mementomorikatsu@gmail.com
+      </div>
+    </div>
+
+    <!-- 詳細ページ（初期は非表示） -->
+    <div id="detail-page" class="hidden">
+      <div class="app-header">
+        <div class="container header-row">
+          <button id="backButton" class="back-button">← <span id="backText">Back</span></button>
+          <div class="controls">
+            <button id="detailThemeToggle" class="primary">🌓</button>
+            <select id="detailLangSelect" class="lang-select">
+              <option value="en">English</option>
+              <option value="it">Italiano</option>
+              <option value="ru">Русский</option>
+              <option value="ja">日本語</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="container">
+        <h2 id="detailWordTitle"></h2>
+        <div id="examples-list"></div>
+      </div>
+      <div class="app-footer">
+        <a href="mailto:mementomorikatsu@gmail.com">Contact us</a><br>
+        mementomorikatsu@gmail.com
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ----------------------------------------------
+    // データ定義 (疑問詞ごとに複数の例文)
+    // 日本語文 + ローマ字(ハイフン/スペース付き) + 各言語翻訳
+    // ----------------------------------------------
+    const interrogativesData = [
+      { id: "nani",  labelEn: "What", labelIt: "Che cosa", labelRu: "Что", labelJa: "何",
+        examples: [
+          { jp: "何が好きですか？", romaji: "nani-ga suki desu ka?",
+            translations: { en: "What do you like?", it: "Cosa ti piace?", ru: "Что тебе нравится?", ja: "何が好きですか？" } },
+          { jp: "これは何ですか？", romaji: "kore wa nani desu ka?",
+            translations: { en: "What is this?", it: "Cos'è questo?", ru: "Что это?", ja: "これは何ですか？" } }
+        ] },
+      { id: "dare",  labelEn: "Who", labelIt: "Chi", labelRu: "Кто", labelJa: "誰",
+        examples: [
+          { jp: "誰が来ましたか？", romaji: "dare-ga kimashita ka?",
+            translations: { en: "Who came?", it: "Chi è venuto?", ru: "Кто пришёл?", ja: "誰が来ましたか？" } },
+          { jp: "あなたは誰を見ましたか？", romaji: "anata wa dare-o mimashita ka?",
+            translations: { en: "Who did you see?", it: "Chi hai visto?", ru: "Кого ты видел?", ja: "あなたは誰を見ましたか？" } }
+        ] },
+      { id: "itsu",  labelEn: "When", labelIt: "Quando", labelRu: "Когда", labelJa: "いつ",
+        examples: [
+          { jp: "いつ日本へ行きますか？", romaji: "itsu nihon e ikimasu ka?",
+            translations: { en: "When will you go to Japan?", it: "Quando andrai in Giappone?", ru: "Когда ты поедешь в Японию?", ja: "いつ日本へ行きますか？" } },
+          { jp: "あなたはいつ起きますか？", romaji: "anata wa itsu okimasu ka?",
+            translations: { en: "When do you get up?", it: "Quando ti alzi?", ru: "Когда ты встаёшь?", ja: "あなたはいつ起きますか？" } }
+        ] },
+      { id: "doko",  labelEn: "Where", labelIt: "Dove", labelRu: "Где", labelJa: "どこ",
+        examples: [
+          { jp: "トイレはどこですか？", romaji: "toire wa doko desu ka?",
+            translations: { en: "Where is the restroom?", it: "Dov'è il bagno?", ru: "Где туалет?", ja: "トイレはどこですか？" } },
+          { jp: "どこで買いましたか？", romaji: "doko-de kaimashita ka?",
+            translations: { en: "Where did you buy it?", it: "Dove l'hai comprato?", ru: "Где ты купил?", ja: "どこで買いましたか？" } }
+        ] },
+      { id: "doyouni", labelEn: "How", labelIt: "Come", labelRu: "Как", labelJa: "どのように",
+        examples: [
+          { jp: "どのように駅へ行きますか？", romaji: "dono youni eki e ikimasu ka?",
+            translations: { en: "How do I get to the station?", it: "Come arrivo alla stazione?", ru: "Как добраться до станции?", ja: "どのように駅へ行きますか？" } },
+          { jp: "どのように使いますか？", romaji: "dono youni tsukaimasu ka?",
+            translations: { en: "How do you use it?", it: "Come si usa?", ru: "Как это использовать?", ja: "どのように使いますか？" } }
+        ] },
+      { id: "naze",  labelEn: "Why", labelIt: "Perché", labelRu: "Почему", labelJa: "なぜ",
+        examples: [
+          { jp: "なぜ笑っていますか？", romaji: "naze waratte imasu ka?",
+            translations: { en: "Why are you laughing?", it: "Perché ridi?", ru: "Почему ты смеёшься?", ja: "なぜ笑っていますか？" } },
+          { jp: "なぜ遅れましたか？", romaji: "naze okuremashita ka?",
+            translations: { en: "Why were you late?", it: "Perché sei in ritardo?", ru: "Почему ты опоздал?", ja: "なぜ遅れましたか？" } }
+        ] },
+      { id: "dore",  labelEn: "Which one", labelIt: "Quale", labelRu: "Который", labelJa: "どれ",
+        examples: [
+          { jp: "どれがあなたの本ですか？", romaji: "dore-ga anata no hon desu ka?",
+            translations: { en: "Which one is your book?", it: "Quale è il tuo libro?", ru: "Какая твоя книга?", ja: "どれがあなたの本ですか？" } },
+          { jp: "どれを選びますか？", romaji: "dore-o erabimasu ka?",
+            translations: { en: "Which one will you choose?", it: "Quale sceglierai?", ru: "Который выберешь?", ja: "どれを選びますか？" } }
+        ] },
+      { id: "dono",  labelEn: "Which (noun)", labelIt: "Quale (nome)", labelRu: "Какой (сущ.)", labelJa: "どの＋名詞",
+        examples: [
+          { jp: "どの本が面白いですか？", romaji: "dono hon-ga omoshiroi desu ka?",
+            translations: { en: "Which book is interesting?", it: "Quale libro è interessante?", ru: "Какая книга интересная?", ja: "どの本が面白いですか？" } },
+          { jp: "どの映画を見ましたか？", romaji: "dono eiga-o mimashita ka?",
+            translations: { en: "Which movie did you watch?", it: "Quale film hai visto?", ru: "Какой фильм ты посмотрел?", ja: "どの映画を見ましたか？" } }
+        ] },
+      { id: "dochira", labelEn: "Which/Where", labelIt: "Quale/Dove", labelRu: "Куда/Где", labelJa: "どちら",
+        examples: [
+          { jp: "どちらが安いですか？", romaji: "dochira-ga yasui desu ka?",
+            translations: { en: "Which one is cheaper?", it: "Quale è più economico?", ru: "Какой дешевле?", ja: "どちらが安いですか？" } },
+          { jp: "どちらに行きますか？", romaji: "dochira-ni ikimasu ka?",
+            translations: { en: "Where will you go?", it: "Dove andrai?", ru: "Куда пойдёшь?", ja: "どちらに行きますか？" } }
+        ] },
+      { id: "donna", labelEn: "What kind of", labelIt: "Che tipo di", labelRu: "Какой", labelJa: "どんな",
+        examples: [
+          { jp: "どんな本が好きですか？", romaji: "donna hon-ga suki desu ka?",
+            translations: { en: "What kind of books do you like?", it: "Che tipo di libri ti piacciono?", ru: "Какие книги тебе нравятся?", ja: "どんな本が好きですか？" } },
+          { jp: "どんな音楽を聞きますか？", romaji: "donna ongaku-o kikimasu ka?",
+            translations: { en: "What kind of music do you listen to?", it: "Che tipo di musica ascolti?", ru: "Какую музыку слушаешь?", ja: "どんな音楽を聞きますか？" } }
+        ] },
+      { id: "ikutsu", labelEn: "How many / how old", labelIt: "Quanti/quanti anni", labelRu: "Сколько", labelJa: "いくつ",
+        examples: [
+          { jp: "リンゴはいくつを買いましたか？", romaji: "ringo wa ikutsu-o kaimashita ka?",
+            translations: { en: "How many apples did you buy?", it: "Quante mele hai comprato?", ru: "Сколько яблок купил?", ja: "リンゴはいくつを買いましたか？" } },
+          { jp: "子供はいくつですか？", romaji: "kodomo wa ikutsu desu ka?",
+            translations: { en: "How old is the child?", it: "Quanti anni ha il bambino?", ru: "Сколько лет ребёнку?", ja: "子供はいくつですか？" } }
+        ] },
+      { id: "ikura", labelEn: "How much", labelIt: "Quanto", labelRu: "Сколько (цена)", labelJa: "いくら",
+        examples: [
+          { jp: "これはいくらですか？", romaji: "kore wa ikura desu ka?",
+            translations: { en: "How much is this?", it: "Quanto costa questo?", ru: "Сколько это стоит?", ja: "これはいくらですか？" } },
+          { jp: "いくらで買いましたか？", romaji: "ikura-de kaimashita ka?",
+            translations: { en: "How much did you buy it for?", it: "Quanto l'hai pagato?", ru: "Сколько заплатил?", ja: "いくらで買いましたか？" } }
+        ] }
+    ];
+
+    // 多言語UIテキスト
+    const uiText = {
+      en: { title: "📖 Japanese Interrogatives", back: "Back", mainTitle: "Choose a question word" },
+      it: { title: "📖 Interrogativi Giapponesi", back: "Indietro", mainTitle: "Scegli una parola interrogativa" },
+      ru: { title: "📖 Японские вопросительные слова", back: "Назад", mainTitle: "Выберите вопросительное слово" },
+      ja: { title: "📖 日本語の疑問詞", back: "戻る", mainTitle: "疑問詞を選んでください" }
+    };
+
+    let currentLang = "en";     // en, it, ru, ja
+    let currentInterrogativeId = null;
+    let speechUtterance = null;
+
+    // DOM 要素
+    const mainPage = document.getElementById("main-page");
+    const detailPage = document.getElementById("detail-page");
+    const questionGrid = document.getElementById("question-grid");
+    const examplesList = document.getElementById("examples-list");
+    const detailWordTitle = document.getElementById("detailWordTitle");
+    const backButton = document.getElementById("backButton");
+    const themeToggle = document.getElementById("themeToggle");
+    const detailThemeToggle = document.getElementById("detailThemeToggle");
+    const langSelect = document.getElementById("langSelect");
+    const detailLangSelect = document.getElementById("detailLangSelect");
+    const mainTitle = document.getElementById("main-title");
+    const backTextSpan = document.getElementById("backText");
+
+    // テーマ切り替え
+    function setTheme(theme) {
+      document.body.classList.remove("dark", "light");
+      document.body.classList.add(theme);
+      localStorage.setItem("theme", theme);
+    }
+    function toggleTheme() {
+      const isDark = document.body.classList.contains("dark");
+      setTheme(isDark ? "light" : "dark");
+    }
+    const savedTheme = localStorage.getItem("theme");
+    if (savedTheme) setTheme(savedTheme);
+    else setTheme("dark");
+    themeToggle.onclick = toggleTheme;
+    detailThemeToggle.onclick = toggleTheme;
+
+    // 音声再生（日本語テキスト）
+    function speakJapanese(text) {
+      if (!window.speechSynthesis) {
+        alert("Speech Synthesis not supported");
+        return;
+      }
+      if (speechUtterance) window.speechSynthesis.cancel();
+      speechUtterance = new SpeechSynthesisUtterance(text);
+      speechUtterance.lang = "ja-JP";
+      speechUtterance.rate = 0.9;
+      window.speechSynthesis.speak(speechUtterance);
+    }
+
+    // メインページの疑問詞リストを描画
+    function renderMainPage() {
+      const ui = uiText[currentLang];
+      mainTitle.textContent = ui.title;
+      backTextSpan.textContent = ui.back;
+      questionGrid.innerHTML = "";
+      interrogativesData.forEach(item => {
+        let displayLabel = "";
+        if (currentLang === "en") displayLabel = item.labelEn;
+        else if (currentLang === "it") displayLabel = item.labelIt;
+        else if (currentLang === "ru") displayLabel = item.labelRu;
+        else displayLabel = item.labelJa;
+        const card = document.createElement("div");
+        card.className = "card";
+        card.innerHTML = `<div class="question-word">${item.labelJa}</div>
+                          <div class="question-trans">${displayLabel}</div>`;
+        card.onclick = () => showDetailPage(item.id);
+        questionGrid.appendChild(card);
+      });
+    }
+
+    // 詳細ページを表示
+    function showDetailPage(interrogativeId) {
+      currentInterrogativeId = interrogativeId;
+      const item = interrogativesData.find(i => i.id === interrogativeId);
+      if (!item) return;
+      // タイトル表示
+      let titleWord = item.labelJa;
+      if (currentLang === "en") titleWord = item.labelEn;
+      else if (currentLang === "it") titleWord = item.labelIt;
+      else if (currentLang === "ru") titleWord = item.labelRu;
+      else titleWord = item.labelJa;
+      detailWordTitle.textContent = `❓ ${titleWord}`;
+      // 例文描画
+      renderExamples(item);
+      // ページ切り替え
+      mainPage.classList.add("hidden");
+      detailPage.classList.remove("hidden");
+      window.scrollTo(0, 0);
+    }
+
+    function renderExamples(item) {
+      examplesList.innerHTML = "";
+      item.examples.forEach((ex, idx) => {
+        const translation = ex.translations[currentLang] || ex.translations.en;
+        const div = document.createElement("div");
+        div.className = "example-item";
+        div.innerHTML = `
+          <div class="japanese-sentence">${ex.jp}</div>
+          <div class="romaji-sentence">${ex.romaji}</div>
+          <div class="translation-box">📖 ${translation}</div>
+          <button class="audio-btn" data-text="${ex.jp.replace(/"/g, '&quot;')}">🔊 音声 / Audio</button>
+        `;
+        const audioBtn = div.querySelector(".audio-btn");
+        audioBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          speakJapanese(ex.jp);
+        });
+        examplesList.appendChild(div);
+      });
+    }
+
+    // 多言語切り替え (UI全体更新)
+    function changeLanguage(lang) {
+      currentLang = lang;
+      localStorage.setItem("userLang", lang);
+      langSelect.value = lang;
+      detailLangSelect.value = lang;
+      const ui = uiText[lang];
+      mainTitle.textContent = ui.title;
+      backTextSpan.textContent = ui.back;
+      renderMainPage();
+      // 詳細ページが開いている場合、再描画
+      if (!mainPage.classList.contains("hidden") && currentInterrogativeId) {
+        // 実は表示されていないときは何もしない
+      }
+      if (!detailPage.classList.contains("hidden") && currentInterrogativeId) {
+        const item = interrogativesData.find(i => i.id === currentInterrogativeId);
+        if (item) {
+          let titleWord = item.labelJa;
+          if (lang === "en") titleWord = item.labelEn;
+          else if (lang === "it") titleWord = item.labelIt;
+          else if (lang === "ru") titleWord = item.labelRu;
+          else titleWord = item.labelJa;
+          detailWordTitle.textContent = `❓ ${titleWord}`;
+          renderExamples(item);
+        }
+      }
+    }
+
+    // 戻る
+    function goToMain() {
+      detailPage.classList.add("hidden");
+      mainPage.classList.remove("hidden");
+      currentInterrogativeId = null;
+      window.scrollTo(0, 0);
+    }
+
+    backButton.onclick = goToMain;
+
+    // 言語選択同期
+    langSelect.addEventListener("change", (e) => changeLanguage(e.target.value));
+    detailLangSelect.addEventListener("change", (e) => changeLanguage(e.target.value));
+
+    // 初期化
+    const savedLang = localStorage.getItem("userLang") || "en";
+    changeLanguage(savedLang);
+
+    // Service Worker 登録
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js').then(reg => {
+          console.log('SW registered: ', reg);
+        }).catch(err => {
+          console.log('SW registration failed: ', err);
+        });
+      });
+    }
+  </script>
+</body>
+</html>
