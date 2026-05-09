@@ -5,6 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title lang="en">Japanese Interrogatives</title>
   <link rel="manifest" href="manifest.json">
+  
+  <!-- iOS / iPhone 対応 -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="JapQuest">
+  <link rel="apple-touch-icon" href="icons/icon-192.jpg">
+
   <meta name="theme-color" content="#1e1e2f">
   <style>
     * {
@@ -324,7 +331,7 @@
         ] }
     ];
 
-    // UI多言語テキスト（ボタンに4言語音声ラベル追加）
+    // UI多言語テキスト
     const uiText = {
       en: { title: "📖 Japanese Interrogatives", back: "Back", mainTitle: "Choose a question word", btnJa: "🔊 Japanese", btnEn: "🇬🇧 English", btnIt: "🇮🇹 Italiano", btnRu: "🇷🇺 Russian" },
       it: { title: "📖 Interrogativi Giapponesi", back: "Indietro", mainTitle: "Scegli una parola interrogativa", btnJa: "🔊 Giapponese", btnEn: "🇬🇧 Inglese", btnIt: "🇮🇹 Italiano", btnRu: "🇷🇺 Russo" },
@@ -352,7 +359,7 @@
     document.getElementById("themeToggle").onclick = toggleTheme;
     document.getElementById("detailThemeToggle").onclick = toggleTheme;
 
-    // 汎用音声再生
+    // 音声再生
     function speakText(text, langCode) {
       if (!window.speechSynthesis) {
         alert("Speech synthesis not supported");
@@ -407,7 +414,7 @@
       window.scrollTo(0, 0);
     }
 
-    // 例文描画（日・英・伊・露の4つの音声ボタン）
+    // 例文描画（4言語音声ボタン）
     function renderExamples(item) {
       const ui = uiText[currentLang];
       const examplesList = document.getElementById("examples-list");
@@ -471,7 +478,7 @@
     const savedLang = localStorage.getItem("userLang") || "en";
     changeLanguage(savedLang);
 
-    // Service Worker 登録 (アイコンキャッシュ対応)
+    // Service Worker 登録
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('sw.js').then(reg => {
