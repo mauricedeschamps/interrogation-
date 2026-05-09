@@ -2,7 +2,9 @@ const CACHE_NAME = 'japanese-interrogatives-v1';
 const urlsToCache = [
   '/',
   'index.html',
-  'manifest.json'
+  'manifest.json',
+  'icons/icon-192.jpg',
+  'icons/icon-512.jpg'
   // アイコンは動的にキャッシュしても良いが、オプション。必要に応じて追加
 ];
 
